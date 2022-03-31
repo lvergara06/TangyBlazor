@@ -1,0 +1,132 @@
+﻿@page "/Product"
+
+@inject IProductRepository _productRepository
+@inject IJSRuntime _jsRuntime
+@inject IFileUpload _fileUpload
+
+<_DeleteConfirmation DeleteFunc="DeleteConfirmed" isParentComponentProcessing="isLoading"></_DeleteConfirmation>
+<div class="row mt-4">
+	<div class="col-6">
+		<h4 class="card-title text-primary">Product List</h4>
+	</div>
+	<div class="col-4 offset-2">
+		<a href="product/create" class="btn btn-primary form-control">Add New Product</a>
+	</div>
+	@if (products.Any())
+	{
+			<table>
+				<tbody>
+					<tr>
+						<th>
+							Name
+						</th>
+						<th>
+							Category
+						</th>
+						<th>
+							Shop Favorite
+						</th>
+						<th>
+							Customer Favorite
+						</th>
+						<th>
+							Actions
+						</th>
+					</tr>
+		@foreach (var product in products)
+		{
+					<tr>
+						<td>
+							@product.Name
+						</td>
+						<td>
+							@product.Category.Name
+						</td>
+						<td>
+							<input type="checkbox" disabled checked="@product.ShopFavorites">
+						</td>
+						<td>
+							<input type="checkbox" disabled checked="@product.CustomerFavorites">
+						</td>
+						<td>
+						<NavLink href=@($"/product/edit/{product.Id}") class="btn-primary btn">Edit</NavLink>
+						<NavLink href=@($"/product/price/{product.Id}") class="btn-secondary btn">Price</NavLink>
+						<button class="btn btn-danger" @onclick="()=>DeleteClick(product.Id)">Delete</button>
+						</td>
+					</tr>		
+		}
+				</tbody>
+			</table>
+	}
+	else
+	{
+		@if(isLoading)
+		{
+			//Loading Symbol
+			<div class="text-center pt-4">
+				<img src="/images/loading.gif">
+			</div>
+		}
+		else
+		{
+			<p>No Records.</p>
+		}
+	}
+</div>
+
+@code {
+	private IEnumerable<ProductDTO> products { get; set; } = new List<ProductDTO>();
+	private bool isLoading;
+	private int savedId = 0;
+
+	//Done before the first render of the page
+	//protected override async Task OnInitializedAsync()
+	//{
+	//Task.Run opens new threads
+	//	await Task.Run(GetCategories);
+	//}
+
+	//Done after a first render
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		//Only load the categories the first time the page is rendered
+		if (firstRender)
+		{
+			await GetProducts();
+		}
+	}
+
+	private async Task GetProducts()
+	{
+		isLoading = true;
+		StateHasChanged();
+		products = await _productRepository.GetAll();
+		isLoading = false;
+		//Notifies the application to render again
+		StateHasChanged();
+	}
+
+	private async Task DeleteClick(int id)
+	{
+		savedId = id;
+		await _jsRuntime.InvokeVoidAsync("ShowDeleteConfirmation");
+	}
+
+	public async Task DeleteConfirmed(bool confirmed)
+	{
+		isLoading = true;
+		if (confirmed && savedId != 0)
+		{
+			ProductDTO product = await _productRepository.Get(savedId);
+			if(!product.ImageUrl.Contains("default.png"))
+			{
+				_fileUpload.Deletefile(product.ImageUrl);
+			}
+			await _productRepository.Delete(savedId);
+			await _jsRuntime.ToastrSuccess("Product delted successfully.");
+			await GetProducts();
+			await _jsRuntime.InvokeVoidAsync("HideDeleteConfirmation");
+		}
+		isLoading = false;
+	}
+}

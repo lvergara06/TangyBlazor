@@ -1,0 +1,44 @@
+﻿@page "/learnBlazor/BlazorJs"
+@inject IJSRuntime _JsRuntime
+<h3>BlazorJs</h3>
+
+<div class="row">
+	<button class="btn btn-secondary m-2" @onclick="TestConfirmBox" style="width:200px" >Test confirm button</button>
+</div>
+<div class="row">
+	<button class="btn btn-success m-2" @onclick="ToastrSuccess" style="width:200px">Test confirm button </button>
+	<button class="btn btn-danger m-2" @onclick="ToastrError" style="width:200px" >Test error button </button>
+</div>
+<div class="row">
+	<button class="btn btn-success m-2" @onclick="SweetSuccess" style="width:200px" >SweetAlert Success</button>
+	<button class="btn btn-danger m-2" @onclick="SweetFailure" style="width:200px" >SweetAlert Failure</button>
+</div>
+	@if(ConfirmResults)
+	{
+		<p>Confirmed!</p>
+	}
+
+@code {
+	private string ConfirmMessage= "Are you sure you want to click?";
+	private bool ConfirmResults { get; set; }
+	private async Task TestConfirmBox()
+	{
+		ConfirmResults = await _JsRuntime.InvokeAsync<bool>("confirm", ConfirmMessage); 
+	}
+	private async Task ToastrSuccess()
+	{
+		await _JsRuntime.ToastrSuccess("Operation Success");
+	}
+	private async Task ToastrError()
+	{
+		await _JsRuntime.ToastrError("Operation Success"); 
+	}
+	private async Task SweetSuccess()
+	{
+		await _JsRuntime.InvokeVoidAsync("ShowSwal", "success", "Success Notification", "Task completed sucessfully!"); 
+	}
+	private async Task SweetFailure()
+	{
+		await _JsRuntime.InvokeVoidAsync("ShowSwal", "error", "Error Notification", "Task Failed"); 
+	}
+}

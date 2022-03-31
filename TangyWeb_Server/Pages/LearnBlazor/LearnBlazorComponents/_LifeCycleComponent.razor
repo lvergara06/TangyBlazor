@@ -1,0 +1,26 @@
+﻿<h3>_LifeCycleComponent</h3>
+
+@if(EventType != null)
+{
+    @foreach(var log in EventType)
+    {
+        <p>Child Log: @log</p>
+    }
+}
+
+@code {
+    List<string> EventType = new List<string>();
+
+    [Parameter]
+    public int CountValue { get; set; }
+
+    protected override void OnInitialized()
+    {
+        EventType.Add("OnInitialized is called");
+    }
+
+    protected override void OnParametersSet()
+    {
+        EventType.Add("OnParemeterSet is called");
+    }
+}

@@ -1,0 +1,72 @@
+﻿@page "/LearnBlazor/DemoProduct"
+
+<h3 class="text-primary">DemoProduct</h3>
+<p>Favourites Total: @selectFav</p>
+<p>Last Selected Product : @LastSelected</p>
+<div class="border p-2 mt-2" style="background-color:azure">
+    <div class="row">
+            @foreach(var product in Products)
+            {
+                <_ProductInfo Product="product" OnFavoriteSelection="FavouriteCountupdate" OnDivSelect="OnClick">
+                    <FirstFragment>#1</FirstFragment>
+                    <SecondFragment>#2</SecondFragment>
+                </_ProductInfo>
+            }
+    </div>
+</div>
+
+@code {
+    List<Demo_Product> Products = new ();
+
+    private string LastSelected = String.Empty;
+    private int selectFav { get; set;} = 0;
+
+    protected override void OnInitialized()
+    {
+
+        Products.Add(new()
+            {
+                Id = 1,
+                Name = "Midnight Blaze",
+                IsActive = true,
+				Price = 10.99,
+                ProductProperties = new()
+                {
+                new Demo_ProductProp { Id = 1, Key = "Flavor", Value = "Rose"},
+                     new Demo_ProductProp { Id = 2, Key = "Size", Value = "20oz"},
+                    new Demo_ProductProp { Id = 3, Key = "Color", Value="Purple" }
+                }
+            });
+
+        Products.Add(new()
+        {
+            Id = 2,
+            Name = "Blossom Lily",
+            IsActive = true,
+			Price = 19.99,
+            ProductProperties = new()
+            {
+                new Demo_ProductProp { Id = 1, Key = "Flavor", Value = "Lily" },
+                new Demo_ProductProp { Id = 2, Key = "Size", Value = "18oz" },
+                new Demo_ProductProp {Id = 3,Key = "Color",Value = "White"}
+            }
+        });
+    }
+
+    protected void FavouriteCountupdate(bool isSelected)
+    {
+        if(isSelected)
+        {
+            selectFav++;
+        }
+        else
+        {
+            selectFav--;
+        }
+    }
+    protected void OnClick(Demo_Product productSelected)
+    {
+        LastSelected = productSelected.Name;
+    }
+
+}
