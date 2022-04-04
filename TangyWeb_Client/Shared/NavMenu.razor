@@ -1,4 +1,7 @@
-﻿<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+﻿@inject ISyncLocalStorageService _localStorage
+@inject ICartService _cartService
+@implements IDisposable 
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="/">Tangy</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -6,10 +9,10 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item pat-0">
-          <NavLink class="nav-link" href="/">
-              <span class="p-2">
-                  Home
+        <li class="nav-item p-0">
+          <NavLink class="nav-link" href="/cart">
+              <i class="bi bi-cart">@NumberOfItems()</i>
+              <span class="p-0">
               </span>
           </NavLink>
         </li>
@@ -35,3 +38,26 @@
     </div>
   </div>
 </nav>
+
+@code{
+    // This function is supposed to get the count of items in the local storage
+    // However, this call is only done once. To do it every time the shopping cart is updated
+    // We will need to create and event and then a disposable function
+    // The event is triggered everytime ShoppingCart is updated.
+    public int NumberOfItems()
+    {
+        var ShoppingCart = _localStorage.GetItem<List<ShoppingCart>>(SD.ShoppingCart);
+        return ShoppingCart==null? 0 : ShoppingCart.Count();
+    }
+
+    protected override void OnInitialized()
+    {
+        _cartService.OnChange += StateHasChanged;
+    }
+
+    // When the component is disposed we want to remove the registration of StateHasChanged
+    public void Dispose()
+    {
+        _cartService.OnChange -= StateHasChanged;
+    }
+}

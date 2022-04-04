@@ -1,5 +1,7 @@
 ﻿@page "/details/{ProductId:int}"
 @inject IProductService _productService
+@inject ICartService _cartService
+@inject NavigationManager _navigationManager
 
 @if(isProcessing)
 {
@@ -9,7 +11,9 @@
 }
 else
 {
-<form method="post">
+    // Use editForm with OnValidSumbit="class" and Model="ModelClass" to bind a form to the data model
+<EditForm OnValidSubmit="AddToCart" Model="DetailsVM" method="post">
+    <DataAnnotationsValidator/>
     <div class="card container mt-4">
         <div class="card-header ml-0  row">
             <div class="col-12 col-md-6">
@@ -29,25 +33,50 @@ else
                         <div class="row">
                             @foreach(var productPrice in Product.Prices)
                             {
-                                <div class="col-2 bg-light text-center pt-2 m-2" style="border:3px solid #28A745; border-radius:10px;box-shadow:5px">
+                                @if(productPrice.Id == DetailsVM.SelectedProductPriceId)
+                                {
+                                    <div class="col-2 bg-light text-center pt-2 m-2" style="border:3px solid #28A745; border-radius:10px;box-shadow:5px">
                                     <p>@productPrice.Size</p>
                                     <p>@productPrice.Price.ToString("c")</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    // <div tags have an @onclick function
+                                    // This binds the div to a function
+                                    // (args)=>class(args, class arguments) allows for arguments to be passed
+                                    <div @onclick="(args)=>SelectedProductPrice(args, productPrice.Id)"
+                                     class="col-2 bg-light text-center pt-2 m-2" style="border:3px solid; border-radius:10px;box-shadow:5px">
+                                    <p>@productPrice.Size</p>
+                                    <p>@productPrice.Price.ToString("c")</p>
+                                    </div>
+                                }
+                            }
+                            @if(DetailsVM.SelectedProductPriceId > 0)
+                            {
+                                <div class="row pl-2">
+                                    <div class="col-2 text-primary"><h4>Count</h4></div>
+                                    <div class="col-10">
+                                    @*Use InputNumber with @bindValue to bind an input to the field in the model*@
+                                    <InputNumber @bind-Value="DetailsVM.Count"/>
+                                    <ValidationMessage For="@(()=>DetailsVM.Count)" />
+                                    </div>
                                 </div>
                             }
-                            <div class="row pl-2">
-                                <div class="col-2 text-primary"><h4>Count</h4></div>
-                                <div class="col-10">
-                                    <input type="text" class="form-control" />
-
-                                </div>
-                            </div>
+                            else
+                            {
+                                <div class="row pl-2">
+                                    <div class="col-2 text-primary"><h4>Count</h4></div>
+                                    <div class="col-10">
+                                    <input disabled type="text" class="form-control" />
+                                    </div>
+                                </div>                                    
+                            }
                         </div>
-                        <div class="col-2">
-                            <img src="@Product.ImageUrl" width="100%" class="rounded" />
-                        </div>
-
                     </div>
-
+                    <div class="col-2">
+                        <img src="@Product.ImageUrl" width="100px" class="rounded" />
+                    </div>
                 </div>
             </div>
             <div class="card-footer">
@@ -62,19 +91,54 @@ else
             </div>
         </div>
     </div>
-</form>
+</EditForm>
 }
 @code {
-	[Parameter]
-	public int ProductId { get; set; }
+    [Parameter]
+    public int ProductId { get; set; }
 
-	public ProductDTO Product { get; set; } = new();
-	public bool isProcessing { get; set; } = false;
+    // Have a View Model dedicated to the selected item on this screen
+    //Important detail on current screen : productprice id selected, count specified 
+    //{you might want productprice navigator}
+    // Note that this model is internal since we wont be using database. 
+    //We will be using internal storage: Blazored LocalStorage
+    private DetailsVM DetailsVM { get; set; } = new();
 
-	protected override async Task OnInitializedAsync()
-	{
-		isProcessing = true;
-		Product = await _productService.Get(ProductId);
-		isProcessing = false;
-	}
+    //ShoppingCart is used as a model when an item is chosen to be added to the shopping cart
+    //Relevant infor should include product id, product navigator, price id and navigator, and count
+    private ShoppingCart ShoppingCart { get; set; } = new();
+
+
+
+    public ProductDTO Product { get; set; } = new();
+    public bool isProcessing { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isProcessing = true;
+        Product = await _productService.Get(ProductId);
+        isProcessing = false;
+    }
+
+    // When this function is called through a binded div you must use MouseEventArgs e as one of its arguments.
+    private async Task SelectedProductPrice(MouseEventArgs e, int productPriceId)
+    {
+        DetailsVM.SelectedProductPriceId = productPriceId;
+        isProcessing = true;
+        DetailsVM.ProductPrice = Product.Prices.FirstOrDefault(u => u.Id == productPriceId);
+        isProcessing = false;
+    }
+    private async Task AddToCart()
+    {
+        isProcessing = true;
+        ShoppingCart.ProductId = ProductId;
+        ShoppingCart.Product = await _productService.Get(ProductId);
+        ShoppingCart.ProductPriceId = DetailsVM.SelectedProductPriceId;
+        ShoppingCart.ProductPrice = Product.Prices.FirstOrDefault(u => u.Id == DetailsVM.SelectedProductPriceId);
+        ShoppingCart.Count = DetailsVM.Count;
+        await _cartService.IncrementCart(ShoppingCart);
+        isProcessing = false;
+        _navigationManager.NavigateTo("/");
+
+    }
 }

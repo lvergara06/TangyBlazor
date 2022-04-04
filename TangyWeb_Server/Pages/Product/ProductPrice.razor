@@ -31,7 +31,7 @@ Toolbar="@(new List<string>{"Add", "Edit", "Update", "Delete", "Cancel"})">
  <GridEditSettings AllowAdding="true" AllowEditing="true" ShowDeleteConfirmDialog="true" AllowDeleting="true"></GridEditSettings>
  <GridEvents OnActionBegin="ActionHandler" TValue="ProductPriceDTO"></GridEvents>
    <GridColumns>
-     <GridColumn IsPrimaryKey="true" AllowAdding="false" Field=@nameof(ProductPriceDTO.Id) HeaderText="Id" Width="150"></GridColumn>
+     <GridColumn IsPrimaryKey="true" Visible="false" AllowAdding="false" Field=@nameof(ProductPriceDTO.Id) HeaderText="Id" Width="150"></GridColumn>
      <GridColumn Field=@nameof(ProductPriceDTO.Size) HeaderText=" Product Size" Width="130">
 		 <EditTemplate>
 			 <Syncfusion.Blazor.DropDowns.SfDropDownList DataSource="SizeList" TItem="string" TValue="string"

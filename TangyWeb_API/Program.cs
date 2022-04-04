@@ -29,7 +29,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+else
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tangy Blazor APIv1");
+        c.RoutePrefix = String.Empty;
+    });
+}
 app.UseHttpsRedirection();
 app.UseCors("Tangy");
 app.UseRouting();
