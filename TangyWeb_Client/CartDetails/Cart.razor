@@ -89,7 +89,9 @@ else
 			</div>
 				<div class="card-footer">
 					<div class="col-12  col-md-3 offset-md-9">
-						<a href="" class="btn btn-secondary form-control">Summary</a>
+						<Tooltip Text="Coming Soon" Placement="TooltipPlacement.Top">
+						<button class="btn btn-secondary form-control">Summary</button>
+						</Tooltip>
 					</div>
 				</div>
 			</div>
@@ -99,7 +101,7 @@ else
 
 @code {
 
-	public List<ShoppingCart> ShoppingCart { get; set; } = new();
+	public List<ShoppingCart> ShoppingCart = new();
 	private bool isProcessing = false;
 	private double Total = 0;
 
@@ -112,10 +114,15 @@ else
 	public async Task LoadCart()
 	{
 		Total = 0;
+
 		ShoppingCart = await _localStorage.GetItemAsync<List<ShoppingCart>>(SD.ShoppingCart);
-		foreach(var item in ShoppingCart)
+		
+		if (ShoppingCart != null)
 		{
-			Total += (item.ProductPrice.Price * item.Count);
+			foreach (var item in ShoppingCart)
+			{
+				Total += (item.ProductPrice.Price * item.Count);
+			}
 		}
 	}
 	public async Task Increment(int productId, int productPriceId, int increment)
