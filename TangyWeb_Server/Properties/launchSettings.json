@@ -3,19 +3,19 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:23232",
-      "sslPort": 44334
+      "applicationUrl": "http://localhost:62135/",
+      "sslPort": 44367
     }
   },
   "profiles": {
     "TangyWeb_Server": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7103;http://localhost:5103",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "https://localhost:7103;http://localhost:5103",
+      "dotnetRunMessages": true
     },
     "IIS Express": {
       "commandName": "IISExpress",

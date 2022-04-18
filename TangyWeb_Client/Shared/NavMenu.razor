@@ -16,29 +16,56 @@
               </span>
           </NavLink>
         </li>
+        <AuthorizeView Roles="@SD.Role_Admin">
+        <Authorized>
+        <li>
+          <NavLink class="nav-link" href="/summary">
+              summary
+              <span class="p-0">
+              </span>
+          </NavLink>
+        </li>
+        </Authorized>
+        </AuthorizeView>
       </ul>
-      <form class="d-flex">
-          <ul class="navbar-nav">
+    <form class="d-flex">
+        <ul class="navbar-nav">
+        <AuthorizeView>
+            <Authorized>
+                <li class="nav-item p-0">
+                <NavLink class="nav-link" href="#">
+                    <span class="p-2">
+                        Hello, @context.User.Identity.Name
+                    </span>
+                </NavLink>
+            </li>
+            <li class="nav-item p-0">
+                <NavLink class="nav-link" href="logout">
+                    <span class="p-2">
+                        Logout
+                    </span>
+                </NavLink>
+            </li>
+            </Authorized>
+            <NotAuthorized>
               <li class="nav-item p-0">
-                  <Tooltip Text="Coming Soon" Placement="TooltipPlacement.Bottom">
-                  <button class="nav-link" href="" disabled>
+                  <NavLink class="nav-link" href="register" >
                       <span class="p-2">
                           Register
                       </span>
-                  </button>
-                  </Tooltip>
+                  </NavLink>
               </li>
               <li class="nav-item p-0">
-                  <Tooltip Text="Coming Soon" Placement="TooltipPlacement.Bottom">
-                  <button class="nav-link" href="" disabled>
+                  <NavLink class="nav-link" href="login" >
                       <span class="p-2">
                           Login
                       </span>
-                  </button>
-                  </Tooltip>
+                  </NavLink>
               </li>
-          </ul>
-      </form>
+            </NotAuthorized>
+        </AuthorizeView>
+            </ul>
+        </form>
     </div>
   </div>
 </nav>

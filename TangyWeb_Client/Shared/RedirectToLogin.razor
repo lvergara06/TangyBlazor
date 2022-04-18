@@ -1,0 +1,21 @@
+﻿@inject NavigationManager _navigationManager
+@inject IJSRuntime _JsRuntime
+
+@code {
+	protected override async Task OnInitializedAsync()
+	{
+
+		var returnUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+        if (string.IsNullOrEmpty(returnUrl))
+        {
+            _navigationManager.NavigateTo("login");
+        }
+        else
+        {
+            _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
+        }
+
+        await _JsRuntime.ToastrError("Must Log In To Proceed");
+
+	}
+}

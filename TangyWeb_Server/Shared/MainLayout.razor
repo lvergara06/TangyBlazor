@@ -8,10 +8,18 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
+        <AuthorizeView>
+            <Authorized>
+                 <div class="top-row px-4">
+                @context.User.Identity.Name <a href="Identity/Account/Logout">Logout</a>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="top-row px-4">
+                <LoginComponent></LoginComponent>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
         <article class="content px-4">
             @Body
         </article>

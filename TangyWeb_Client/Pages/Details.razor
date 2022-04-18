@@ -2,6 +2,7 @@
 @inject IProductService _productService
 @inject ICartService _cartService
 @inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
 
 @if(isProcessing)
 {
@@ -134,6 +135,7 @@ else
         await _cartService.IncrementCart(ShoppingCart);
         isProcessing = false;
         _navigationManager.NavigateTo("/");
+        await _jsRuntime.ToastrSuccess("Product added to cart successfully");
 
     }
 }

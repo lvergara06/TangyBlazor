@@ -1,0 +1,83 @@
+﻿@page "/register"
+
+@inject IAuthenticationService _authService
+@inject NavigationManager _navigationManager
+@inject IJSRuntime _JsRuntime
+
+
+<EditForm Model="SignUpRequest" OnValidSubmit="RegisterUser" class="pt-4">
+    <DataAnnotationsValidator/>
+    <div class="py-4">
+        <div class=" row form-group ">
+            <div class="col-6 offset-3 ">
+                <div class="card border">
+                    <div class="card-body px-lg-5 pt-4">
+                        <h3 class="col-12 text-success text-center py-2">
+                            <strong>Sign Up</strong>
+                        </h3>
+                             @if(ShowRegistrationErrors)
+                            {
+                                @foreach(var error in Errors)
+                                {
+                                    <p>@error</p>
+                                }
+                            }
+                        <div class="py-2">
+                            <InputText @bind-Value="SignUpRequest.Name" class="form-control" placeholder="Name..." />
+                            <ValidationMessage For="(()=>SignUpRequest.Name)"/>
+                        </div>
+                        <div class="py-2">
+                             <InputText @bind-Value="SignUpRequest.Email" class="form-control" placeholder="Email..." />
+                            <ValidationMessage For="(()=>SignUpRequest.Email)"/>
+                        </div>
+                        <div class="py-2 input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"> +1</span>
+                            </div>
+                            <InputText @bind-Value="SignUpRequest.PhoneNumber" class="form-control" placeholder="Phone Number..." />
+                            <ValidationMessage For="(()=>SignUpRequest.PhoneNumber)"/>
+                        </div>
+                        <div class="form-row py-2">
+                            <div class="col">
+                            <InputText @bind-Value="SignUpRequest.Password" class="form-control" placeholder="Password..." />
+                            <ValidationMessage For="(()=>SignUpRequest.Password)"/>
+                            </div>
+                            <div class="col py-2">
+                            <InputText @bind-Value="SignUpRequest.ConfirmPassword" class="form-control" placeholder="ConfirmPassword..." />
+                            <ValidationMessage For="(()=>SignUpRequest.ConfirmPassword)"/>
+                            </div>
+                        </div>
+                        <hr style="background-color:aliceblue" />
+                        <div class="py-2">
+                                <button type="submit" class="btn btn-success btn-block"><i class="bi bi-person-plus-fill"></i> Register</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private SignUpRequestDTO SignUpRequest { get; set; } = new();
+    public bool IsProcessing { get; set; }
+    public bool ShowRegistrationErrors { get; set; }
+    public IEnumerable<string> Errors { get; set; } 
+
+    private async Task RegisterUser()
+    {
+        var result = await _authService.RegisterUser(SignUpRequest);
+
+        if(result.IsRegisterationSuccessful)
+        {
+            _navigationManager.NavigateTo("/login");
+            await _JsRuntime.ToastrSuccess("Register Successful");
+        }
+        else
+        {
+            Errors = result.Errors;
+            ShowRegistrationErrors = true;
+        }
+    }
+
+}
