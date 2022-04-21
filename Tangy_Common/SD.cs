@@ -22,5 +22,7 @@ namespace Tangy_Common
         public const string Local_Token = "JWT Token";
 
         public const string UserDetails = "UserDetails";
+
+        public const string Local_OrderDetails = "LocalOrderDetails";
     }
 }

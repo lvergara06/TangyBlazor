@@ -26,11 +26,13 @@ namespace Tangy_DataAccess
         public string? SessionId { get; set; }
         public string? PaymentIntentId { get; set; }
         public string Name { get; set; }
+        public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string StreetAddress { get; set; }
         public string State { get; set; }
         public string City { get; set; }
         public string PostalCode { get; set; }
-
-    }
+		public string Tracking { get; set; }
+		public string Carrier { get; set; }
+	}
 }

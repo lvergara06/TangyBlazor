@@ -1,0 +1,68 @@
+﻿@page "/orderlist"
+
+
+@inject IOrderRepository _orderRepository
+@inject NavigationManager _navigationManager
+
+<div>
+    <h4 class="card-title text-info">Order's List</h4>
+    @if (OrderHdrs.Any())
+    {
+        <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" PageSize="5" AllowPaging="true" AllowSorting="true" 
+        Data="OrderHdrs" TItem="OrderHdrDTO" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Property="Id" Filterable="false" Title="ID" Frozen="true" />
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Property="Name" Title="Name" Frozen="true"  />
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Property="PhoneNumber" Title="Phone"   />
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Property="Email" Title="Email"   />
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Property="OrderTotal" Title="Total"   />
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Property="OrderDate" Title="Order Date" FormatString="{0:d}" />
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Property="Status" Title="Status" />
+            <RadzenDataGridColumn TItem="OrderHdrDTO" Title="Details" >
+                <Template Context="data">
+                    <RadzenButton Click="(args=> OrderDetails(data.Id))" Text="Details" ButtonStyle="ButtonStyle.Success"></RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+    }
+     else
+        {
+            if (isProcessing)
+            {
+                //loading gif
+                <div class="text-center">
+                <img src="/images/loading.gif">
+                    </div>
+            }
+        }
+</div>
+
+@code {
+    private IEnumerable<OrderHdrDTO> OrderHdrs { get; set; } = new List<OrderHdrDTO>();
+    private bool isProcessing { get; set; } = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadOrders();
+        }
+    }
+
+    private async Task LoadOrders()
+    {
+        isProcessing = true;
+        StateHasChanged();
+        var Orders = await _orderRepository.GetAll();
+
+        OrderHdrs = Orders.Select(u => u.OrderHdr);
+        isProcessing = false;
+		StateHasChanged();
+	}
+
+    private async Task OrderDetails(int hdrId)
+    {
+        _navigationManager.NavigateTo("/order/details/" + hdrId);
+    }
+}

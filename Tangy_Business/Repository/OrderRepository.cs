@@ -24,7 +24,40 @@ namespace Tangy_Business.Repository
             _db = db;
             _mapper = mapper;
         }
-        public async Task<OrderDTO> Create(OrderDTO objDTO)
+
+		public async Task<OrderHdrDTO> CancelOrder(int Id)
+		{
+            var orderHeader = await _db.OrderHdrs.FindAsync(Id);
+            if (orderHeader == null)
+            {
+                return new OrderHdrDTO();
+            }
+
+            if (orderHeader.Status == SD.Status_Pending)
+            {
+                orderHeader.Status = SD.Status_Cancelled;
+                await _db.SaveChangesAsync();
+            }
+            if (orderHeader.Status == SD.Status_Confirmed)
+            {
+                //refund
+                var options = new Stripe.RefundCreateOptions
+                {
+                    Reason = Stripe.RefundReasons.RequestedByCustomer,
+                    PaymentIntent = orderHeader.PaymentIntentId
+                };
+
+                var service = new Stripe.RefundService();
+                Stripe.Refund refund = service.Create(options);
+
+                orderHeader.Status = SD.Status_Refunded;
+                await _db.SaveChangesAsync();
+            }
+
+            return _mapper.Map<OrderHdr, OrderHdrDTO>(orderHeader);
+        }
+
+		public async Task<OrderDTO> Create(OrderDTO objDTO)
         {
 
             try
@@ -130,10 +163,22 @@ namespace Tangy_Business.Repository
         {
             if(objDTO != null)
             {
-                var OrderHdr = _mapper.Map<OrderHdrDTO, OrderHdr>(objDTO);
-                _db.OrderHdrs.Update(OrderHdr);
+                var orderHeaderFromDb = _db.OrderHdrs.FirstOrDefault(u => u.Id == objDTO.Id);
+
+                UpdateOrderStatus(objDTO.Id, objDTO.Status);
+
+                orderHeaderFromDb.Name = objDTO.Name;
+                orderHeaderFromDb.PhoneNumber = objDTO.PhoneNumber;
+                orderHeaderFromDb.Carrier = objDTO.Carrier;
+                orderHeaderFromDb.Tracking = objDTO.Tracking;
+                orderHeaderFromDb.StreetAddress = objDTO.StreetAddress;
+                orderHeaderFromDb.City = objDTO.City;
+                orderHeaderFromDb.State = objDTO.State;
+                orderHeaderFromDb.PostalCode = objDTO.PostalCode;
+                orderHeaderFromDb.Status = objDTO.Status;
+
                 await _db.SaveChangesAsync();
-                return _mapper.Map<OrderHdr, OrderHdrDTO>(OrderHdr);
+                return _mapper.Map<OrderHdr, OrderHdrDTO>(orderHeaderFromDb);
             }
             return new OrderHdrDTO();
         }
