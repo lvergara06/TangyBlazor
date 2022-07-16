@@ -3,10 +3,10 @@
 @inject ILocalStorageService _localStorage
 @inject IProductService _productService
 
-@if(isProcessing)
+@if (isProcessing)
 {
-<div style="position:fixed;top:50%;left:50%;margin-top:-50px;margin-left:-100px;">
-    <img src="images/ajax-loader.gif" />
+	<div style="position:fixed;top:50%;left:50%;margin-top:-50px;margin-left:-100px;">
+		<img src="images/ajax-loader.gif" />
 	</div>
 }
 else
@@ -32,8 +32,8 @@ else
 					</div>
 				</div>
 				<div class="card-body">
-				@foreach (var item in ShoppingCart)
-				{
+					@foreach (var item in ShoppingCart)
+					{
 						<div class="row">
 							<div class="col-3 col-md-1 text-center py-2">
 								<img src="@item.Product.ImageUrl" class="rounded" width="100px" />
@@ -56,41 +56,41 @@ else
 								</div>
 								<div class="col-6 col-sm-4 col-lg-6">
 									<button @onclick="()=>Increment(item.ProductId, item.ProductPriceId, 1)"
-										type="submit" class="btn btn-primary">
+								type="submit" class="btn btn-primary">
 										<i class="bi bi-plus-square"></i>
 									</button>
 									<button @onclick="()=>Decrement(item.ProductId, item.ProductPriceId, 1)"
-										type="submit" class="btn btn-warning">
+								type="submit" class="btn btn-warning">
 										<i class="bi bi-dash-square"></i>
 									</button>
 								</div>
 								<div class="col-2 col-sm-4 col-lg-2 text-right">
 									<button @onclick="()=>Decrement(item.ProductId, item.ProductPriceId, 0)"
-										type="submit" class="btn btn-outline-danger">
+								type="submit" class="btn btn-outline-danger">
 										<i class="bi bi-trash-fill"></i>
 									</button>
 								</div>
 							</div>
 						</div>
-				}
-				<hr />
-				<div class="row">
-					<div class="col-12 col-md-5">
-					</div>
-					<div class="col-12 col-md-6 offset-md-1 col-lg-4 offset-lg-3 pr-4">
-						<ul class="list-group">
-							<li class="list-group-item d-flex justify-content-between bg-light">
-								<span class="text-info"> Total (USD)</span>
-								<strong class="text-info">@Total.ToString("c")</strong>
-							</li>
-						</ul>
+					}
+					<hr />
+					<div class="row">
+						<div class="col-12 col-md-5">
+						</div>
+						<div class="col-12 col-md-6 offset-md-1 col-lg-4 offset-lg-3 pr-4">
+							<ul class="list-group">
+								<li class="list-group-item d-flex justify-content-between bg-light">
+									<span class="text-info"> Total (USD)</span>
+									<strong class="text-info">@Total.ToString("c")</strong>
+								</li>
+							</ul>
+						</div>
 					</div>
 				</div>
-			</div>
 				<div class="card-footer">
 					<div class="col-12  col-md-3 offset-md-9">
-						 <NavLink class="nav-link" href="/summary">
-							 <button class="btn btn-secondary form-control">Summary</button>
+						<NavLink class="nav-link" href="/summary">
+							<button class="btn btn-secondary form-control">Summary</button>
 						</NavLink>
 					</div>
 				</div>
@@ -100,14 +100,15 @@ else
 }
 
 @code {
-
-	public List<ShoppingCart> ShoppingCart = new();
+	public List<ShoppingCart> ShoppingCart = new List<ShoppingCart>();
+	private IEnumerable<ProductDTO> Products { get; set; }
 	private bool isProcessing = false;
 	private double Total = 0;
 
 	protected override async Task OnInitializedAsync()
 	{
 		isProcessing = true;
+		Products = await _productService.GetAll();
 		await LoadCart();
 		isProcessing = false;
 	}
@@ -116,29 +117,35 @@ else
 		Total = 0;
 
 		ShoppingCart = await _localStorage.GetItemAsync<List<ShoppingCart>>(SD.ShoppingCart);
-		
-		if (ShoppingCart != null)
+
+		if  (ShoppingCart != null)
 		{
 			foreach (var item in ShoppingCart)
 			{
+				item.Product = Products.FirstOrDefault(u => u.Id == item.ProductId);
+				item.ProductPrice = item.Product.Prices.FirstOrDefault(u => u.Id == item.ProductPriceId);
 				Total += (item.ProductPrice.Price * item.Count);
 			}
+		}
+		else
+		{
+			ShoppingCart = new();
 		}
 	}
 	public async Task Increment(int productId, int productPriceId, int increment)
 	{
-		isProcessing=true;
-		await _cartService.IncrementCart(new ShoppingCart() 
-									{ ProductId = productId, ProductPriceId = productPriceId, Count = increment });
+		isProcessing = true;
+		await _cartService.IncrementCart(new ShoppingCart()
+			{ ProductId = productId, ProductPriceId = productPriceId, Count = increment });
 		await LoadCart();
 		isProcessing = false;
 	}
 
 	public async Task Decrement(int productId, int productPriceId, int decrement)
 	{
-		isProcessing=true;
-		await _cartService.DecrementCart(new ShoppingCart() 
-									{ ProductId = productId, ProductPriceId = productPriceId, Count = decrement });
+		isProcessing = true;
+		await _cartService.DecrementCart(new ShoppingCart()
+			{ ProductId = productId, ProductPriceId = productPriceId, Count = decrement });
 		await LoadCart();
 		isProcessing = false;
 	}

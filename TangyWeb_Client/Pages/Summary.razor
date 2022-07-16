@@ -111,7 +111,6 @@ else
 	public bool isProcessing { get; set; } = false;
 	private OrderDTO Order { get; set; } = null;
 	private IEnumerable<ProductDTO> Products { get; set; }
-	private double Total = 0;
 
 	protected override async Task OnInitializedAsync()
 	{

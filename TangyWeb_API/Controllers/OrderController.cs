@@ -62,16 +62,23 @@ namespace TangyWeb_API.Controllers
             return Ok(result);
         }
 
-        [HttpPost("paymentsuccessful")]
+        [HttpPost("PaymentSuccessful")]
         public async Task<IActionResult> PaymentSuccessful([FromBody] OrderHdrDTO orderHdrDTO)
         {
             var service = new SessionService();
             var sessionDetails = service.Get(orderHdrDTO.SessionId);
+            if(sessionDetails == null)
+            {
+                return BadRequest(new ErrorModelDTO()
+                {
+                    ErrorMessage = "Cannot Verify SessionDetails"
+                });
+            }
             if(sessionDetails.PaymentStatus == "paid")
             {
                 var result = await _orderRepository.MarkPaymentSuccessful(orderHdrDTO.Id);
-                await _emailSender.SendEmailAsync(orderHdrDTO.Email, "Tangy Order Confirmation",
-                    "New Order has been created:" + orderHdrDTO.Id);
+               // await _emailSender.SendEmailAsync(orderHdrDTO.Email, "Tangy Order Confirmation",
+                //    "New Order has been created:" + orderHdrDTO.Id);
                 if(result == null)
                 {
                     return BadRequest(new ErrorModelDTO()
@@ -81,7 +88,10 @@ namespace TangyWeb_API.Controllers
                 }
                 return Ok(result);
             }
-            return BadRequest();
+            return BadRequest(new ErrorModelDTO()
+            {
+                ErrorMessage = "Not in payment status"
+            });
         }
     }
 }
